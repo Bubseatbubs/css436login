@@ -1,12 +1,19 @@
-import firebase from 'firebase/compat/app';
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import 'firebase/auth';
 import 'firebaseui/dist/firebaseui.css';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import LoginForm from './LoginForm';
+import Dashboard from './Dashboard';
+import SignupForm from './SignupForm';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route
+} from "react-router-dom";
 import './index.css';
+
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -17,36 +24,40 @@ const firebaseConfig = {
   messagingSenderId: "727283676444",
   appId: "1:727283676444:web:f8840e79fbf453147236d9",
   measurementId: "G-TJWEPPJQ7S"
-
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+const Home = () => {
+  const [loggedIn, setLoggedIn] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setLoggedIn(true);
+      } else {
+        setLoggedIn(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loggedIn === null) return <></>;
+  if (loggedIn === true) return <Dashboard />;
+  if (loggedIn === false) return <LoginForm />;
+}
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <LoginForm />
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/signup" element={<SignupForm />}/>
+      </Routes>
+    </Router>
   </React.StrictMode>
 );
-
-// Handle signup form submission
-// document.getElementById('signup-form').addEventListener('submit', (e) => {
-//   e.preventDefault();
-//   const email = document.getElementById('signup-email').value;
-//   const password = document.getElementById('signup-password').value;
-
-//   createUserWithEmailAndPassword(auth, email, password)
-//     .then((userCredential) => {
-//       // Signed up
-//       const user = userCredential.user;
-//       console.log('User signed up:', user);
-//       // Redirect or show a success message
-//     })
-//     .catch((error) => {
-//       const errorCode = error.code;
-//       const errorMessage = error.message;
-//       console.error('Error signing up:', errorCode, errorMessage);
-//     });
-// });
