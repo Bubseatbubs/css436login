@@ -1,15 +1,27 @@
 import React, { useState } from 'react';
 import './LoginForm.css';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import 'firebase/auth';
 
 const LoginForm = () => {
-    const [username, setUsername] = useState('');
+    const auth = getAuth();
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
+    
     const handleSubmit = (e) => {
         e.preventDefault();
-        // TODO: Add backend support for logging in
-        console.log('Username:', username);
-        console.log('Password:', password);
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed in
+                const user = userCredential.user;
+                console.log('User signed in:', user);
+                // Redirect or show a success message
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                console.error('Error signing in:', errorCode, errorMessage);
+            });
     };
 
     return (
@@ -20,10 +32,10 @@ const LoginForm = () => {
                     <div>
                         <input
                             className='input-field'
-                            placeholder="Username"
-                            type="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="Email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
